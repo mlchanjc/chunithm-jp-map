@@ -1,5 +1,5 @@
 import { ShopDetail } from "@/types/ShopDetail";
-import { parse } from "node-html-parser";
+import { HTMLElement, parse } from "node-html-parser";
 import { writeFile } from "fs";
 
 function getMapLink(str: string): string {
