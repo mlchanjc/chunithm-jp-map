@@ -43,22 +43,31 @@ const ChunithmMap = () => {
 		}
 	}, [map]);
 
+	const handleLocate = () => {
+		checkLocationPermission().then((permissionState) => {
+			switch (permissionState) {
+				case "granted":
+				case "prompt":
+					map?.locate();
+					break;
+				case "denied":
+					window.alert("Please enable location permission");
+					if (navigator.geolocation) {
+						map?.locate();
+					} else {
+						window.alert("Geolocation is not supported by your browser.");
+					}
+					break;
+			}
+		});
+	};
+
 	const onLocationFound = (e: LocationEvent) => {
 		setUserPos(e.latlng);
 		const distanceTo = map!.getCenter().distanceTo(e.latlng);
 		if (distanceTo < 10) return;
 
-		checkLocationPermission().then((permissionState) => {
-			switch (permissionState) {
-				case "granted":
-				case "prompt":
-					map?.flyTo(e.latlng, Math.max(17, map.getZoom()), { duration: 0.8, animate: distanceTo < 30000 });
-					break;
-				case "denied":
-					window.alert("Please enable location permission");
-					break;
-			}
-		});
+		map?.flyTo(e.latlng, Math.max(17, map.getZoom()), { duration: 0.8, animate: distanceTo < 30000 });
 	};
 
 	useEffect(() => {
@@ -99,8 +108,8 @@ const ChunithmMap = () => {
 					})}
 				</MarkerClusterGroup>
 			</MapContainer>
-			<button className="fixed right-4 bottom-7 md:right-16 md:bottom-20 z-[999] rounded-full w-14 h-14 p-1.5 bg-white outline-none" onClick={() => map?.locate()}>
-				<div className="relative w-full h-full active:opacity-70 active:scale-95 duration-100 transition-transform">
+			<button className="fixed right-4 bottom-7 md:right-16 md:bottom-20 z-[999] rounded-full w-14 h-14 p-1.5 bg-white outline-none" onClick={handleLocate}>
+				<div className="relative w-full h-full active:opacity-70 active:scale-95 duration-100 transition-transform select-none">
 					<Image src="/locate.svg" sizes="10" alt="locate" fill draggable={false} />
 				</div>
 			</button>

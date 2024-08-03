@@ -9,6 +9,6 @@ export function checkLocationPermission(): Promise<PermissionState> {
 				.catch(() => {
 					resolve("denied");
 				});
-		}
+		} else resolve("denied");
 	});
 }
