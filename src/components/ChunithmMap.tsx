@@ -52,9 +52,7 @@ const ChunithmMap = () => {
 					break;
 				case "denied":
 					window.alert("Please enable location permission");
-					if (navigator.geolocation) {
-						map?.locate();
-					} else {
+					if (!navigator.geolocation) {
 						window.alert("Geolocation is not supported by your browser.");
 					}
 					break;
@@ -74,6 +72,9 @@ const ChunithmMap = () => {
 		console.log("Shop count: " + shopList.length);
 		map?.on("move", onMove);
 		map?.on("locationfound", onLocationFound);
+		map?.on("locationerror", (e) => {
+			window.alert(e.message);
+		});
 		return () => {
 			map?.off("move", onMove);
 			map?.off("locationfound", onLocationFound);
