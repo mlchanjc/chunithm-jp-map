@@ -9,6 +9,7 @@ import { shopList } from "../../public/shopList";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { checkLocationPermission } from "@/utils/checkLocationPermission";
+import { isMobile } from "@/utils/isMobile";
 
 const markerIcon = new Icon({
 	iconUrl: "/marker.svg",
@@ -48,11 +49,26 @@ const ChunithmMap = () => {
 			switch (permissionState) {
 				case "granted":
 				case "prompt":
-					map?.locate();
+					if (isMobile()) {
+						navigator.geolocation.getCurrentPosition(
+							(position) => {
+								const latitude = position.coords.latitude;
+								const longitude = position.coords.longitude;
+								flyToUser(new LatLng(latitude, longitude));
+							},
+							(error) => {
+								window.alert(error.message);
+							},
+							{ enableHighAccuracy: false, timeout: 20000 }
+						);
+					} else {
+						map?.locate();
+					}
 					break;
 				case "denied":
-					window.alert("Please enable location permission");
-					if (!navigator.geolocation) {
+					if (navigator.geolocation) {
+						window.alert("Please enable location permission");
+					} else {
 						window.alert("Geolocation is not supported by your browser.");
 					}
 					break;
@@ -61,11 +77,15 @@ const ChunithmMap = () => {
 	};
 
 	const onLocationFound = (e: LocationEvent) => {
-		setUserPos(e.latlng);
-		const distanceTo = map!.getCenter().distanceTo(e.latlng);
+		flyToUser(e.latlng);
+	};
+
+	const flyToUser = (latlng: LatLng) => {
+		setUserPos(latlng);
+		const distanceTo = map!.getCenter().distanceTo(latlng);
 		if (distanceTo < 10) return;
 
-		map?.flyTo(e.latlng, Math.max(17, map.getZoom()), { duration: 0.8, animate: distanceTo < 30000 });
+		map?.flyTo(latlng, Math.max(17, map.getZoom()), { duration: 0.8, animate: distanceTo < 30000 });
 	};
 
 	useEffect(() => {
@@ -73,11 +93,12 @@ const ChunithmMap = () => {
 		map?.on("move", onMove);
 		map?.on("locationfound", onLocationFound);
 		map?.on("locationerror", (e) => {
-			window.alert(e.message);
+			window.alert("Error: " + e.message);
 		});
 		return () => {
 			map?.off("move", onMove);
 			map?.off("locationfound", onLocationFound);
+			map?.off("locationerror");
 		};
 	}, [map, onMove]);
 
