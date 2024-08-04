@@ -75,19 +75,23 @@ async function getShopDetailList(shopList: string[]): Promise<ShopDetail[]> {
 	return shopDetails.filter((detail): detail is ShopDetail => detail !== null);
 }
 
-export async function fetchLocation(): Promise<ShopDetail[]> {
+export async function fetchShopDetails(): Promise<ShopDetail[]> {
 	const baseUrl: string = "https://location.am-all.net/alm/location?gm=109&lang=en&ct=1000&at=";
 
 	const shopList: string[] = [];
 
-	for (let i = 0; i < 47; i++) {
+	const prefectureCount = 47;
+
+	for (let i = 0; i < prefectureCount; i++) {
 		const response = await fetch(`${baseUrl}${i}`, {
 			next: { revalidate: 200 },
 		});
 
 		if (!response.ok) throw Error;
 		const shopHtml = await response.text();
-		parseShopList(shopHtml).forEach((shop) => shopList.push(shop));
+		parseShopList(shopHtml).forEach((shop) => {
+			if (shop !== "") shopList.push(shop);
+		});
 	}
 
 	const list = await getShopDetailList(shopList);

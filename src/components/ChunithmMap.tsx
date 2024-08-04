@@ -31,7 +31,7 @@ const defaultPosition = "[35.6585,  139.6422]";
 const initPosition = JSON.parse(localStorage.getItem("position") ?? defaultPosition);
 
 const defaultZoom = 7;
-const initZoom = isFinite(Number(localStorage.getItem("zoom"))) ? Number(localStorage.getItem("zoom")) : defaultZoom;
+const initZoom = isFinite(Number(localStorage.getItem("zoom") ?? defaultZoom)) ? Number(localStorage.getItem("zoom") ?? defaultZoom) : defaultZoom;
 
 const ChunithmMap = () => {
 	const [map, setMap] = useState<Map | null>(null);
@@ -93,7 +93,7 @@ const ChunithmMap = () => {
 		map?.on("move", onMove);
 		map?.on("locationfound", onLocationFound);
 		map?.on("locationerror", (e) => {
-			window.alert("Error: " + e.message);
+			window.alert(e.message);
 		});
 		return () => {
 			map?.off("move", onMove);
@@ -130,7 +130,11 @@ const ChunithmMap = () => {
 					})}
 				</MarkerClusterGroup>
 			</MapContainer>
-			<button className="fixed right-4 bottom-7 md:right-16 md:bottom-20 z-[999] rounded-full w-14 h-14 p-1.5 bg-white outline-none" onClick={handleLocate}>
+			<button
+				className="fixed right-4 bottom-7 md:right-16 md:bottom-20 z-[999] rounded-full w-14 h-14 p-1.5 bg-white outline-none"
+				onClick={handleLocate}
+				title="Show your location"
+			>
 				<div className="relative w-full h-full active:opacity-70 active:scale-95 duration-100 transition-transform select-none">
 					<Image src="/locate.svg" sizes="10" alt="locate" fill draggable={false} />
 				</div>
