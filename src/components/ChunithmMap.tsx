@@ -109,9 +109,8 @@ const ChunithmMap = () => {
 					attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 					url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 				/>
+				{userPos && <Marker position={userPos} icon={peopleIcon}></Marker>}
 				<MarkerClusterGroup chunkedLoading={true} showCoverageOnHover={false} maxClusterRadius={60}>
-					{userPos && <Marker position={userPos} icon={peopleIcon}></Marker>}
-
 					{shopList.map((shop: ShopDetail) => {
 						return (
 							<Marker key={`Marker ${shop.latitude}`} position={{ lat: shop.latitude, lng: shop.longitude }} icon={markerIcon}>
