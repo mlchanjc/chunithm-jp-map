@@ -14,9 +14,9 @@ import { isMobile } from "@/utils/isMobile";
 const markerIcon = new Icon({
 	iconUrl: "/marker.svg",
 	iconRetinaUrl: "/marker.svg",
-	iconSize: [35, 51],
-	iconAnchor: [18, 39],
-	popupAnchor: [0, -35],
+	iconSize: [45, 60],
+	iconAnchor: [22, 50],
+	popupAnchor: [0, -45],
 });
 
 const peopleIcon = new Icon({
@@ -105,10 +105,7 @@ const ChunithmMap = () => {
 	return (
 		<>
 			<MapContainer center={initPosition} zoom={initZoom} scrollWheelZoom={true} zoomControl={false} className="w-full h-full" ref={setMap}>
-				<TileLayer
-					attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-					url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-				/>
+				<TileLayer attribution="Google Maps" url="https://www.google.com/maps/vt?lyrs=m&hl=en&x={x}&y={y}&z={z}" />
 				{userPos && <Marker position={userPos} icon={peopleIcon}></Marker>}
 				<MarkerClusterGroup chunkedLoading={true} showCoverageOnHover={false} maxClusterRadius={60}>
 					{shopList.map((shop: ShopDetail) => {
