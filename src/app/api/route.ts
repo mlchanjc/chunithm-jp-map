@@ -1,6 +1,6 @@
 import { ShopDetail } from "@/types/ShopDetail";
 import { HTMLElement, parse } from "node-html-parser";
-import { writeFile } from "fs";
+import { NextResponse } from "next/server";
 
 function getMapLink(str: string): string {
 	return str.split("'")[1];
@@ -33,9 +33,7 @@ function getBusinessHours(infoList: HTMLElement): string {
 async function getShopDetail(subUrl: string): Promise<ShopDetail | null> {
 	const baseUrl: string = "https://location.am-all.net/alm/";
 
-	const response = await fetch(baseUrl + subUrl, {
-		next: { revalidate: 200 },
-	});
+	const response = await fetch(baseUrl + subUrl);
 
 	const data = await response.text();
 
@@ -75,7 +73,7 @@ async function getShopDetailList(shopList: string[]): Promise<ShopDetail[]> {
 	return shopDetails.filter((detail): detail is ShopDetail => detail !== null);
 }
 
-export async function fetchShopDetails(): Promise<ShopDetail[]> {
+async function fetchShopDetails(): Promise<ShopDetail[]> {
 	const baseUrl: string = "https://location.am-all.net/alm/location?gm=109&lang=en&ct=1000&at=";
 
 	const shopList: string[] = [];
@@ -83,9 +81,7 @@ export async function fetchShopDetails(): Promise<ShopDetail[]> {
 	const prefectureCount = 47;
 
 	for (let i = 0; i < prefectureCount; i++) {
-		const response = await fetch(`${baseUrl}${i}`, {
-			next: { revalidate: 200 },
-		});
+		const response = await fetch(`${baseUrl}${i}`);
 
 		if (!response.ok) throw Error;
 		const shopHtml = await response.text();
@@ -94,14 +90,23 @@ export async function fetchShopDetails(): Promise<ShopDetail[]> {
 		});
 	}
 
-	const list = await getShopDetailList(shopList);
-
-	const listString = JSON.stringify(list); // Convert to JSON string
-
-	writeFile("shopList.json", listString, (err) => {
-		if (err) throw err;
-		console.log("File saved!");
-	});
-
-	return list;
+	return await getShopDetailList(shopList);
 }
+
+export const GET = async () => {
+	try {
+		const list = await fetchShopDetails();
+
+		const response = NextResponse.json(list, {
+			status: 200,
+			headers: {
+				"X-Update-Time": Date.now().toString(),
+			},
+		});
+
+		return response;
+	} catch (error) {
+		console.log(error);
+		return NextResponse.error();
+	}
+};

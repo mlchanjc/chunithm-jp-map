@@ -1,4 +1,4 @@
-export const shopList = [
+export const oldShopList = [
 	{
 		name: "タイトーステーション札幌狸小路２丁目店",
 		longitude: 141.35545295092618,

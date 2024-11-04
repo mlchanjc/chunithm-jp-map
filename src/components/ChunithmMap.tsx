@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { ShopDetail } from "@/types/ShopDetail";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { Icon, LatLng, LocationEvent, Map } from "leaflet";
-import { shopList } from "../../public/shopList";
+import { oldShopList } from "../../public/oldShopList";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { checkLocationPermission } from "@/utils/checkLocationPermission";
@@ -33,9 +33,10 @@ const initPosition = JSON.parse(localStorage.getItem("position") ?? defaultPosit
 const defaultZoom = 7;
 const initZoom = isFinite(Number(localStorage.getItem("zoom") ?? defaultZoom)) ? Number(localStorage.getItem("zoom") ?? defaultZoom) : defaultZoom;
 
-const ChunithmMap = () => {
+const ChunithmMap: React.FC<{ shopList: ShopDetail[] | undefined; latestUpdateTime: Date }> = ({ shopList, latestUpdateTime }) => {
 	const [map, setMap] = useState<Map | null>(null);
 	const [userPos, setUserPos] = useState<LatLng | null>(null);
+	const [data, setData] = useState(shopList ?? oldShopList);
 
 	const onMove = useCallback(() => {
 		if (map) {
@@ -89,7 +90,7 @@ const ChunithmMap = () => {
 	};
 
 	useEffect(() => {
-		console.log("Shop count: " + shopList.length);
+		console.log("Shop count: " + data.length);
 		map?.on("move", onMove);
 		map?.on("locationfound", onLocationFound);
 		map?.on("locationerror", (e) => {
@@ -108,7 +109,7 @@ const ChunithmMap = () => {
 				<TileLayer attribution="Google Maps" url="https://www.google.com/maps/vt?lyrs=m&hl=en&x={x}&y={y}&z={z}" />
 				{userPos && <Marker position={userPos} icon={peopleIcon}></Marker>}
 				<MarkerClusterGroup chunkedLoading={true} showCoverageOnHover={false} maxClusterRadius={60}>
-					{shopList.map((shop: ShopDetail) => {
+					{data.map((shop: ShopDetail) => {
 						return (
 							<Marker key={`Marker ${shop.latitude}`} position={{ lat: shop.latitude, lng: shop.longitude }} icon={markerIcon}>
 								<Popup>
@@ -135,6 +136,7 @@ const ChunithmMap = () => {
 					<Image src="/locate.svg" sizes="10" alt="locate" fill draggable={false} />
 				</div>
 			</button>
+			<div className="fixed left-2 bottom-2 z-[999] rounded-xl p-2 bg-white outline-none text-xs">{"Latest Update: " + latestUpdateTime.toLocaleDateString()}</div>
 		</>
 	);
 };
