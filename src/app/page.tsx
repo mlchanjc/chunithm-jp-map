@@ -16,7 +16,7 @@ export default async function Page() {
 
 	try {
 		const response = await fetch(`${process.env.API_URL}/api`, {
-			next: { revalidate: 10 },
+			next: { revalidate: 3600 },
 		});
 
 		if (response.ok) {

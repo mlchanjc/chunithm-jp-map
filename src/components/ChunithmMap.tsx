@@ -33,7 +33,7 @@ const initPosition = JSON.parse(localStorage.getItem("position") ?? defaultPosit
 const defaultZoom = 7;
 const initZoom = isFinite(Number(localStorage.getItem("zoom") ?? defaultZoom)) ? Number(localStorage.getItem("zoom") ?? defaultZoom) : defaultZoom;
 
-const ChunithmMap: React.FC<{ shopList: ShopDetail[] | undefined }> = ({ shopList }) => {
+const ChunithmMap: React.FC<{ shopList?: ShopDetail[] }> = ({ shopList }) => {
 	const [map, setMap] = useState<Map | null>(null);
 	const [userPos, setUserPos] = useState<LatLng | null>(null);
 	const [data, setData] = useState(shopList ?? oldShopList);

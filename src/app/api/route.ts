@@ -78,25 +78,8 @@ async function fetchShopDetails(): Promise<ShopDetail[]> {
 export const GET = async () => {
 	try {
 		console.log("called");
-		//const list = await fetchShopDetails();
-		const list = [
-			{
-				name: "タイトーステーション札幌狸小路２丁目店",
-				longitude: 141.35545295092618,
-				latitude: 43.05733562965091,
-				link: "//maps.google.com/maps?q=タイトーステーション札幌狸小路２丁目店@43.05733562965091,141.35545295092618&zoom=16&hl=en",
-				address: "〒060-0063\n\n\n\n                                    北海道札幌市中央区南３条西２丁目−１４",
-				businessHours: "",
-			},
-			{
-				name: "東急百貨店さっぽろアミューズパーク",
-				longitude: 141.35270916508182,
-				latitude: 43.06755206891484,
-				link: "//maps.google.com/maps?q=東急百貨店さっぽろアミューズパーク@43.06755206891484,141.35270916508182&zoom=16&hl=en",
-				address: "〒060-8619\n\n\n\n                                    北海道札幌市中央区北４条西２−１東急百貨店さっぽろ店９階",
-				businessHours: "business hours： 10:00～20:00",
-			},
-		];
+		const list = await fetchShopDetails();
+
 		return NextResponse.json(list);
 	} catch (error) {
 		console.error(error);
