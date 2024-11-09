@@ -33,7 +33,7 @@ const initPosition = JSON.parse(localStorage.getItem("position") ?? defaultPosit
 const defaultZoom = 7;
 const initZoom = isFinite(Number(localStorage.getItem("zoom") ?? defaultZoom)) ? Number(localStorage.getItem("zoom") ?? defaultZoom) : defaultZoom;
 
-const ChunithmMap: React.FC<{ shopList: ShopDetail[] | undefined; latestUpdateTime: Date }> = ({ shopList, latestUpdateTime }) => {
+const ChunithmMap: React.FC<{ shopList: ShopDetail[] | undefined }> = ({ shopList }) => {
 	const [map, setMap] = useState<Map | null>(null);
 	const [userPos, setUserPos] = useState<LatLng | null>(null);
 	const [data, setData] = useState(shopList ?? oldShopList);
@@ -136,7 +136,6 @@ const ChunithmMap: React.FC<{ shopList: ShopDetail[] | undefined; latestUpdateTi
 					<Image src="/locate.svg" sizes="10" alt="locate" fill draggable={false} />
 				</div>
 			</button>
-			<div className="fixed left-2 bottom-2 z-[999] rounded-xl p-2 bg-white outline-none text-xs">{"Latest Update: " + latestUpdateTime.toLocaleDateString()}</div>
 		</>
 	);
 };
