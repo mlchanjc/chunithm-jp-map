@@ -2,41 +2,27 @@ import { ShopDetail } from "@/types/ShopDetail";
 import { HTMLElement, parse } from "node-html-parser";
 import { NextResponse } from "next/server";
 
-function getMapLink(str: string): string {
+const BASE_URL = "https://location.am-all.net/alm/";
+
+function extractCoordinates(str: string): [number, number] {
+	const parts = str.split("@")[1].split("&")[0].split(",");
+	return [Number(parts[0]), Number(parts[1])];
+}
+
+function extractMapLink(str: string): string {
 	return str.split("'")[1];
 }
 
-function getLatitude(str: string): number {
-	return Number(str.split("@")[1].split("&")[0].split(",")[0]);
-}
-
-function getLongitude(str: string): number {
-	return Number(str.split("@")[1].split("&")[0].split(",")[1]);
-}
-
-function getAddress(infoList: HTMLElement): string {
-	const li = infoList.querySelector("li:first-child");
-
-	const address = li?.textContent?.trim() ?? "";
-
-	return address;
-}
-
-function getBusinessHours(infoList: HTMLElement): string {
-	const li = infoList.querySelector("li:nth-child(2)");
-
-	const businessHours = li?.textContent?.trim() ?? "";
-
-	return businessHours;
+function extractInfo(infoList: HTMLElement, index: number): string {
+	const li = infoList.querySelector(`li:nth-child(${index})`);
+	return li?.textContent?.trim() ?? "";
 }
 
 async function getShopDetail(subUrl: string): Promise<ShopDetail | null> {
-	const baseUrl: string = "https://location.am-all.net/alm/";
-
-	const response = await fetch(baseUrl + subUrl);
+	const response = await fetch(BASE_URL + subUrl);
+	if (!response.ok) return null;
 
 	const data = await response.text();
-
 	const doc = parse(data);
 
 	const shopName = doc.querySelector("h3")?.textContent;
@@ -45,13 +31,15 @@ async function getShopDetail(subUrl: string): Promise<ShopDetail | null> {
 
 	if (!shopName || !btnOnClick || !infoList) return null;
 
+	const [latitude, longitude] = extractCoordinates(btnOnClick);
+
 	const shopDetail: ShopDetail = {
 		name: shopName,
-		longitude: getLongitude(btnOnClick),
-		latitude: getLatitude(btnOnClick),
-		link: getMapLink(btnOnClick),
-		address: getAddress(infoList),
-		businessHours: getBusinessHours(infoList),
+		latitude,
+		longitude,
+		link: extractMapLink(btnOnClick),
+		address: extractInfo(infoList, 1),
+		businessHours: extractInfo(infoList, 2),
 	};
 
 	return shopDetail;
@@ -59,35 +47,29 @@ async function getShopDetail(subUrl: string): Promise<ShopDetail | null> {
 
 function parseShopList(htmlString: string): string[] {
 	const doc = parse(htmlString);
-
-	const detailBtns: HTMLElement[] = doc.querySelectorAll(".bt_details_en");
-
-	const shopList: string[] = Array.from(detailBtns).map((element) => element.getAttribute("onclick")?.split("'")[1] || "");
-
-	return shopList;
+	const detailBtns = doc.querySelectorAll(".bt_details_en");
+	return Array.from(detailBtns)
+		.map((btn) => btn.getAttribute("onclick")?.split("'")[1] || "")
+		.filter(Boolean);
 }
 
 async function getShopDetailList(shopList: string[]): Promise<ShopDetail[]> {
-	const shopDetailPromises = shopList.map((shop) => getShopDetail(shop));
+	const shopDetailPromises = shopList.map(getShopDetail);
 	const shopDetails = await Promise.all(shopDetailPromises);
 	return shopDetails.filter((detail): detail is ShopDetail => detail !== null);
 }
 
 async function fetchShopDetails(): Promise<ShopDetail[]> {
-	const baseUrl: string = "https://location.am-all.net/alm/location?gm=109&lang=en&ct=1000&at=";
-
 	const shopList: string[] = [];
-
 	const prefectureCount = 47;
+	const baseUrl = `${BASE_URL}location?gm=109&lang=en&ct=1000&at=`;
 
 	for (let i = 0; i < prefectureCount; i++) {
 		const response = await fetch(`${baseUrl}${i}`);
+		if (!response.ok) throw new Error("Failed to fetch shop details");
 
-		if (!response.ok) throw Error;
 		const shopHtml = await response.text();
-		parseShopList(shopHtml).forEach((shop) => {
-			if (shop !== "") shopList.push(shop);
-		});
+		shopList.push(...parseShopList(shopHtml));
 	}
 
 	return await getShopDetailList(shopList);
@@ -95,18 +77,12 @@ async function fetchShopDetails(): Promise<ShopDetail[]> {
 
 export const GET = async () => {
 	try {
+		console.log("called");
 		const list = await fetchShopDetails();
 
-		const response = NextResponse.json(list, {
-			status: 200,
-			headers: {
-				"X-Update-Time": Date.now().toString(),
-			},
-		});
-
-		return response;
+		return NextResponse.json(list);
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 		return NextResponse.error();
 	}
 };

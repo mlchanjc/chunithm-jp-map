@@ -11,8 +11,8 @@ export default async function Page() {
 		[]
 	);
 
-	let shopList = undefined;
-	let latestUpdateTime = new Date("Aug 2, 2024");
+	let shopList;
+	let lastUpdateTime = new Date("Aug 2, 2024");
 
 	try {
 		const response = await fetch(`${process.env.API_URL}/api`, {
@@ -22,9 +22,11 @@ export default async function Page() {
 		if (response.ok) {
 			shopList = await response.json();
 
-			const timeFromHeader = response.headers.get("X-Update-Time");
-			if (timeFromHeader) {
-				latestUpdateTime = new Date(Number(timeFromHeader));
+			const dateHeader = response.headers.get("date");
+
+			if (dateHeader) {
+				const date = new Date(dateHeader);
+				lastUpdateTime = date;
 			}
 		}
 	} catch (error) {
@@ -33,7 +35,10 @@ export default async function Page() {
 
 	return (
 		<main className="flex items-center justify-center w-screen h-screen">
-			<ChunithmMap shopList={shopList} latestUpdateTime={latestUpdateTime} />
+			<ChunithmMap shopList={shopList} />
+			<div className="fixed left-2 bottom-2 z-[999] rounded-xl p-2 bg-white outline-none text-xs">
+				{"Last Update: " + lastUpdateTime.toLocaleDateString() + " " + lastUpdateTime.toLocaleTimeString()}
+			</div>
 		</main>
 	);
 }
