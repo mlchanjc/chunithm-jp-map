@@ -33,10 +33,9 @@ const initPosition = JSON.parse(localStorage.getItem("position") ?? defaultPosit
 const defaultZoom = 7;
 const initZoom = isFinite(Number(localStorage.getItem("zoom") ?? defaultZoom)) ? Number(localStorage.getItem("zoom") ?? defaultZoom) : defaultZoom;
 
-const ChunithmMap: React.FC<{ shopList?: ShopDetail[] }> = ({ shopList }) => {
+const ChunithmMap: React.FC<{ shopList?: ShopDetail[] }> = ({ shopList = oldShopList }) => {
 	const [map, setMap] = useState<Map | null>(null);
 	const [userPos, setUserPos] = useState<LatLng | null>(null);
-	const [data, setData] = useState(shopList ?? oldShopList);
 
 	const onMove = useCallback(() => {
 		if (map) {
@@ -90,7 +89,7 @@ const ChunithmMap: React.FC<{ shopList?: ShopDetail[] }> = ({ shopList }) => {
 	};
 
 	useEffect(() => {
-		console.log("Shop count: " + data.length);
+		console.log("Shop count: " + shopList.length);
 		map?.on("move", onMove);
 		map?.on("locationfound", onLocationFound);
 		map?.on("locationerror", (e) => {
@@ -109,7 +108,7 @@ const ChunithmMap: React.FC<{ shopList?: ShopDetail[] }> = ({ shopList }) => {
 				<TileLayer attribution="Google Maps" url="https://www.google.com/maps/vt?lyrs=m&hl=en&x={x}&y={y}&z={z}" />
 				{userPos && <Marker position={userPos} icon={peopleIcon}></Marker>}
 				<MarkerClusterGroup chunkedLoading={true} showCoverageOnHover={false} maxClusterRadius={60}>
-					{data.map((shop: ShopDetail) => {
+					{shopList.map((shop: ShopDetail) => {
 						return (
 							<Marker key={`Marker ${shop.latitude}`} position={{ lat: shop.latitude, lng: shop.longitude }} icon={markerIcon}>
 								<Popup>
